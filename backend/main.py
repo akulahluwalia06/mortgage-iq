@@ -75,16 +75,22 @@ app_state: dict = {}
 async def startup_db():
     global db_client, predictions_col, _scheduler
     if MONGODB_URI:
-        db_client = AsyncIOMotorClient(MONGODB_URI)
-        db = db_client[DB_NAME]
-        predictions_col = db["predictions"]
-        await predictions_col.create_index("timestamp")
-        log.info(f"✅ MongoDB connected → {DB_NAME}.predictions")
+        try:
+            db_client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
+            db = db_client[DB_NAME]
+            predictions_col = db["predictions"]
+            # Ping first — fail fast if unreachable rather than hanging
+            await db_client.admin.command("ping")
+            await predictions_col.create_index("timestamp")
+            log.info(f"✅ MongoDB connected → {DB_NAME}.predictions")
 
-        app_state["approval_model"] = approval_model
-        app_state["rate_model"]     = rate_model
-        app_state["scaler"]         = scaler
-        _scheduler = start_scheduler(predictions_col, app_state)
+            app_state["approval_model"] = approval_model
+            app_state["rate_model"]     = rate_model
+            app_state["scaler"]         = scaler
+            _scheduler = start_scheduler(predictions_col, app_state)
+        except Exception as e:
+            log.warning(f"⚠️  MongoDB unavailable: {e} — predictions disabled, API still serves.")
+            predictions_col = None
     else:
         log.warning("⚠️  MONGODB_URI not set — predictions will not be stored.")
 
