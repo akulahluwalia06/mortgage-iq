@@ -60,7 +60,7 @@ jobs:
       - name: Build
         run: cd frontend && npm run build
         env:
-          REACT_APP_API_URL: https://mortgage-iq-api.onrender.com
+          REACT_APP_API_URL: https://mortgage-iq-1.onrender.com
 
   # ── Deploy frontend to GitHub Pages (main branch only) ────
   deploy-frontend:
@@ -88,7 +88,7 @@ jobs:
       - name: Build
         run: cd frontend && npm run build
         env:
-          REACT_APP_API_URL: https://mortgage-iq-api.onrender.com
+          REACT_APP_API_URL: https://mortgage-iq-1.onrender.com
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
