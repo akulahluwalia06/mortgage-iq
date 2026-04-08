@@ -19,7 +19,7 @@
   "devDependencies": {
     "gh-pages": "^6.1.1"
   },
-  "homepage": ".",
+  "homepage": "https://akulahluwalia06.github.io/mortgage-iq",
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],
     "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
