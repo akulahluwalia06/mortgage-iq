@@ -8,7 +8,7 @@
 .glass-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--br-xl);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   position: relative;
@@ -86,7 +86,7 @@
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--br-md);
   padding: 1rem 1.1rem;
   backdrop-filter: blur(12px);
   transition: border-color 0.2s;
@@ -128,7 +128,7 @@
 .ratio-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--br-md);
   padding: 0.9rem 1rem;
   backdrop-filter: blur(12px);
 }
@@ -165,7 +165,7 @@
 .stress-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--br-md);
   padding: 0.9rem 1rem;
   display: flex;
   gap: 0.65rem;
@@ -188,7 +188,7 @@
 .insights {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--br-md);
   padding: 1.1rem 1.25rem;
   backdrop-filter: blur(12px);
 }
@@ -226,7 +226,7 @@
 .chart-tab {
   background: none;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: var(--br-sm);
   color: var(--text-muted);
   cursor: pointer;
   font-family: 'Inter', sans-serif;
@@ -251,7 +251,7 @@
 .chart-wrap {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--br-md);
   padding: 1.25rem;
   backdrop-filter: blur(12px);
 }
@@ -270,7 +270,7 @@
 .chart-tooltip {
   background: rgba(8,16,38,0.95);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--br-sm);
   padding: 0.6rem 0.85rem;
   font-size: 0.78rem;
   backdrop-filter: blur(12px);
@@ -282,7 +282,7 @@
 .schedule-table-wrap {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--br-md);
   padding: 1.25rem;
   backdrop-filter: blur(12px);
 }
