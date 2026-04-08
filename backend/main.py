@@ -16,6 +16,9 @@ import logging
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+import sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+
 from constants import (
     PROVINCE_MAP, EMPLOYMENT_MAP, PROPERTY_TYPE_MAP,
     GDS_LIMIT, TDS_LIMIT, STRESS_TEST_FLOOR,
