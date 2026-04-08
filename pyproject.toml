@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "mortgage-iq"
+version = "1.0.0"
+description = "Canadian AI mortgage predictor"
+authors = ["akulahluwalia06"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+fastapi = ">=0.111.0"
+uvicorn = {extras = ["standard"], version = ">=0.29.0"}
+pydantic = ">=2.7.1"
+scikit-learn = ">=1.3.0,<1.5.0"
+numpy = ">=1.24.0,<2.0.0"
+pandas = ">=2.0.0"
+joblib = ">=1.3.0"
+python-dotenv = ">=1.0.1"
+motor = ">=3.4.0"
+slowapi = ">=0.1.9"
+apscheduler = ">=3.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
