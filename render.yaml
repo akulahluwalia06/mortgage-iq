@@ -2,7 +2,7 @@ services:
   - type: web
     name: mortgage-iq-api
     runtime: python
-    buildCommand: pip install -r backend/requirements.txt && cd backend && python model/train_model.py
+    buildCommand: pip install -r requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: MONGODB_URI
