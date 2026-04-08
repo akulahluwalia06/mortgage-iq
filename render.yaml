@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: mortgage-iq-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && python model/train_model.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: DB_NAME
+        value: mortgage_predictor
+      - key: ALLOWED_ORIGINS
+        value: https://akulahluwalia06.github.io
+      - key: MAX_DOCS
+        value: 150000
+      - key: TARGET_DOCS
+        value: 100000
+      - key: RETRAIN_THRESHOLD
+        value: 500
