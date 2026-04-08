@@ -2,7 +2,7 @@
 Canadian Mortgage Predictor — FastAPI Backend
 """
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -13,18 +13,30 @@ import joblib
 import os
 import logging
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from scheduler import start_scheduler
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="Canadian Mortgage Predictor API", version="1.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 # ── MongoDB setup ─────────────────────────────────────────────────────────────
@@ -229,7 +241,8 @@ def build_amortization_schedule(principal: float, annual_rate_pct: float, years:
 
 # ── Prediction endpoint ───────────────────────────────────────────────────────
 @app.post("/predict", response_model=MortgageResponse)
-async def predict_mortgage(req: MortgageRequest):
+@limiter.limit("10/minute")
+async def predict_mortgage(request: Request, req: MortgageRequest):
     if approval_model is None:
         raise HTTPException(503, "Models not loaded. Run train_model.py first.")
 
@@ -331,7 +344,8 @@ async def predict_mortgage(req: MortgageRequest):
 
 # ── History endpoint ──────────────────────────────────────────────────────────
 @app.get("/history")
-async def get_history(limit: int = Query(20, ge=1, le=100)):
+@limiter.limit("30/minute")
+async def get_history(request: Request, limit: int = Query(20, ge=1, le=100)):
     """Return the most recent predictions stored in MongoDB."""
     if predictions_col is None:
         raise HTTPException(503, "MongoDB not configured. Add MONGODB_URI to .env")
