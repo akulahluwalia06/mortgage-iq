@@ -65,7 +65,7 @@ export default function ResultPanel({ result }) {
     passes_stress_test, amortization_schedule, insights,
   } = result;
 
-  const chartData = amortization_schedule.map((row) => ({
+  const chartData = (amortization_schedule ?? []).map((row) => ({
     year: row.year,
     Principal: Math.round(row.principal_paid),
     Interest: Math.round(row.interest_paid),
@@ -77,7 +77,11 @@ export default function ResultPanel({ result }) {
     { name: 'Interest',  value: Math.round(total_interest) },
     ...(cmhc_insurance > 0 ? [{ name: 'CMHC', value: Math.round(cmhc_insurance) }] : []),
   ];
-  const PIE_COLORS = ['#00d4ff', '#7c3aed', '#fbbf24'];
+  const PIE_COLORS = [
+    getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()   || '#00d4ff',
+    getComputedStyle(document.documentElement).getPropertyValue('--violet').trim() || '#7c3aed',
+    getComputedStyle(document.documentElement).getPropertyValue('--amber').trim()  || '#fbbf24',
+  ];
 
   return (
     <div className="result-panel">

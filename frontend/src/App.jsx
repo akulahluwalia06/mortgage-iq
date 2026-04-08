@@ -18,10 +18,20 @@ export default function App() {
     setError(null);
     setResult(null);
     try {
-      const { data } = await axios.post(`${API_URL}/predict`, formData);
+      const { data } = await axios.post(`${API_URL}/predict`, formData, { timeout: 30000 });
       setResult(data);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Unable to reach the analysis server.');
+      if (err.code === 'ECONNABORTED') {
+        setError('Request timed out. The server is taking too long — please try again.');
+      } else if (!err.response) {
+        setError('Cannot reach the server. Make sure the backend is running on port 8000.');
+      } else if (err.response.status === 429) {
+        setError('Too many requests. Please wait a moment before trying again.');
+      } else if (err.response.status === 422) {
+        setError('Invalid input. Please check your values and try again.');
+      } else {
+        setError(err.response?.data?.detail || 'Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

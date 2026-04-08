@@ -3,28 +3,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
+  /* ── Backgrounds ── */
   --bg-deep:      #02040f;
   --bg-card:      rgba(8, 16, 38, 0.75);
   --bg-input:     rgba(6, 14, 34, 0.9);
+
+  /* ── Borders ── */
   --border:       rgba(0, 212, 255, 0.12);
   --border-hover: rgba(0, 212, 255, 0.35);
 
+  /* ── Brand colours ── */
   --cyan:         #00d4ff;
   --cyan-dim:     rgba(0, 212, 255, 0.15);
   --violet:       #7c3aed;
+  --violet-light: #a78bfa;
   --violet-dim:   rgba(124, 58, 237, 0.15);
-  --violet-glow:  rgba(124, 58, 237, 0.4);
-  --pink:         #ec4899;
 
+  /* ── Semantic colours ── */
   --green:        #00ffa3;
   --green-dim:    rgba(0, 255, 163, 0.12);
   --red:          #ff4d6d;
   --red-dim:      rgba(255, 77, 109, 0.12);
   --amber:        #fbbf24;
 
+  /* ── Typography ── */
   --text:         #e8f4ff;
   --text-muted:   rgba(180, 210, 240, 0.45);
   --text-sub:     rgba(140, 180, 220, 0.65);
+
+  /* ── Border radius scale ── */
+  --br-sm:  8px;
+  --br-md:  12px;
+  --br-lg:  16px;
+  --br-xl:  20px;
 }
 
 html { scroll-behavior: smooth; }
