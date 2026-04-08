@@ -1,9 +1,9 @@
 services:
   - type: web
     name: mortgage-iq-api
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     envVars:
       - key: MONGODB_URI
         sync: false
@@ -12,8 +12,8 @@ services:
       - key: ALLOWED_ORIGINS
         value: https://akulahluwalia06.github.io
       - key: MAX_DOCS
-        value: 150000
+        value: "150000"
       - key: TARGET_DOCS
-        value: 100000
+        value: "100000"
       - key: RETRAIN_THRESHOLD
-        value: 500
+        value: "500"
