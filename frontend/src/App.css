@@ -6,7 +6,7 @@
 
 .main {
   flex: 1;
-  padding: 2rem 1.5rem 4rem;
+  padding: 2.5rem 2rem 5rem;
   max-width: 1380px;
   margin: 0 auto;
   width: 100%;
@@ -14,7 +14,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 440px 1fr;
+  grid-template-columns: 448px 1fr;
   gap: 2rem;
   align-items: start;
 }
@@ -25,19 +25,19 @@
 .loading-card {
   background: var(--bg-white);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--red);
-  border-radius: var(--br-lg);
-  padding: 5rem 2rem;
+  border-radius: var(--br-xl);
+  padding: 6rem 2rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
+  box-shadow: var(--shadow-md);
 }
 
 .spinner-ring {
   position: relative;
-  width: 48px; height: 48px;
+  width: 52px; height: 52px;
 }
 
 .spinner-ring::before,
@@ -56,7 +56,8 @@
   inset: 0;
   border: 2px solid transparent;
   border-top-color: var(--red);
-  animation: spin 0.9s linear infinite;
+  border-right-color: rgba(200,16,46,0.35);
+  animation: spin 0.85s linear infinite;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -73,74 +74,74 @@
   color: var(--text-muted);
   font-size: 0.78rem;
   max-width: 280px;
-  line-height: 1.6;
-  font-family: var(--sans);
+  line-height: 1.7;
 }
 
 /* ── Error ───────────────────────────────────────────────── */
 .error-card {
-  background: var(--red-dim);
-  border: 1px solid rgba(200, 16, 46, 0.2);
+  background: var(--bg-white);
+  border: 1px solid rgba(200, 16, 46, 0.18);
   border-left: 4px solid var(--red);
   border-radius: var(--br-lg);
-  padding: 1.5rem;
+  padding: 1.5rem 1.75rem;
   display: flex;
-  gap: 0.85rem;
+  gap: 0.9rem;
   align-items: flex-start;
+  box-shadow: var(--shadow-sm);
 }
 
-.error-icon { font-size: 1.25rem; line-height: 1.4; }
-.error-card p { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
+.error-icon { font-size: 1.2rem; line-height: 1.5; flex-shrink: 0; }
+.error-card p { font-size: 0.875rem; color: var(--text); line-height: 1.65; }
 
 /* ── Placeholder ─────────────────────────────────────────── */
 .placeholder-card {
   background: var(--bg-white);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--border-med);
-  border-radius: var(--br-lg);
-  padding: 4rem 2.5rem;
+  border-radius: var(--br-xl);
+  padding: 5rem 2.5rem;
   text-align: center;
+  box-shadow: var(--shadow-sm);
 }
 
 .placeholder-glyph {
-  width: 64px; height: 64px;
-  margin: 0 auto 1.5rem;
+  width: 72px; height: 72px;
+  margin: 0 auto 1.75rem;
   border-radius: 50%;
   background: var(--bg-muted);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.75rem;
+  font-size: 2rem;
 }
 
 .placeholder-card h3 {
   font-family: var(--serif);
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 400;
   color: var(--text);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 .placeholder-card p {
   color: var(--text-muted);
-  margin-bottom: 2rem;
-  font-size: 0.85rem;
-  max-width: 320px;
+  margin-bottom: 2.25rem;
+  font-size: 0.875rem;
+  max-width: 340px;
   margin-left: auto;
   margin-right: auto;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .placeholder-features {
   list-style: none;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 1.5rem;
+  gap: 0.55rem 2rem;
   text-align: left;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
-  max-width: 320px;
+  max-width: 340px;
   margin: 0 auto;
   font-family: var(--mono);
 }
@@ -148,13 +149,13 @@
 .placeholder-features li {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 .placeholder-features li::before {
   content: '→';
   color: var(--red);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   flex-shrink: 0;
 }
 
@@ -163,16 +164,21 @@
   text-align: center;
   padding: 1.5rem;
   color: var(--text-light);
-  font-size: 0.73rem;
+  font-size: 0.72rem;
   border-top: 1px solid var(--border);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   font-family: var(--mono);
   background: var(--bg-white);
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: 400px 1fr; gap: 1.5rem; }
+}
+
+@media (max-width: 900px) {
   .grid { grid-template-columns: 1fr; }
   .form-col { position: static; }
   .placeholder-features { grid-template-columns: 1fr; }
+  .main { padding: 1.5rem 1rem 4rem; }
 }

@@ -79,11 +79,17 @@ export default function ResultPanel({ result }) {
   ];
   const PIE_COLORS = ['#C8102E', '#1A3F6F', '#B45309'];
 
+  const fadeUp = (delay = 0) => ({
+    initial: { opacity: 0, y: 14 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.38, delay, ease: [0.4, 0, 0.2, 1] },
+  });
+
   return (
     <div className="result-panel">
 
       {/* ── Approval banner ── */}
-      <div className={`glass-card approval-banner ${approved ? 'approved' : 'declined'}`}>
+      <motion.div {...fadeUp(0)} className={`glass-card approval-banner ${approved ? 'approved' : 'declined'}`}>
         <div className="approval-text">
           <h2>{approved ? '✦ Likely Approved' : '◈ Review Required'}</h2>
           <p>
@@ -93,20 +99,20 @@ export default function ResultPanel({ result }) {
           </p>
         </div>
         <ApprovalGauge prob={approval_probability} />
-      </div>
+      </motion.div>
 
       {/* ── Key stats ── */}
-      <div className="stats-grid">
+      <motion.div {...fadeUp(0.07)} className="stats-grid">
         <Stat label="Monthly Payment"   value={CAD(monthly_payment)}          highlight />
         <Stat label="Predicted Rate"    value={`${predicted_interest_rate}%`} highlight />
         <Stat label="Total Interest"    value={CAD(total_interest)}           color="red" />
         <Stat label="Total Cost"        value={CAD(total_payment)} />
         {cmhc_insurance > 0 && <Stat label="CMHC Insurance" value={CAD(cmhc_insurance)} color="yellow" />}
         <Stat label="Loan Amount"       value={CAD(loan_amount)} />
-      </div>
+      </motion.div>
 
       {/* ── Ratios + stress test ── */}
-      <div className="ratio-row">
+      <motion.div {...fadeUp(0.13)} className="ratio-row">
         <RatioCard label="GDS Ratio" value={PCT(gds_ratio)} max={0.39} actual={gds_ratio} />
         <RatioCard label="TDS Ratio" value={PCT(tds_ratio)} max={0.44} actual={tds_ratio} />
         <div className={`stress-card ${passes_stress_test ? 'pass' : 'fail'}`}>
@@ -117,29 +123,29 @@ export default function ResultPanel({ result }) {
             <p className="stress-status">{passes_stress_test ? 'PASSES' : 'FAILS'}</p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* ── Insights ── */}
       {insights.length > 0 && (
-        <div className="insights">
+        <motion.div {...fadeUp(0.19)} className="insights">
           <h3>Analysis &amp; Recommendations</h3>
           <ul>
             {insights.map((ins, i) => (
               <motion.li
                 key={i}
-                initial={{ opacity: 0, x: -8 }}
+                initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.06 }}
+                transition={{ delay: 0.22 + i * 0.055, ease: [0.4, 0, 0.2, 1] }}
               >
                 {ins}
               </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Chart tabs ── */}
-      <div className="chart-tabs">
+      <motion.div {...fadeUp(0.24)} className="chart-tabs">
         {[
           { key: 'overview',   label: 'Amortization' },
           { key: 'breakdown',  label: 'Cost Breakdown' },
@@ -153,11 +159,11 @@ export default function ResultPanel({ result }) {
             {t.label}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* ── Bar chart ── */}
       {tab === 'overview' && (
-        <div className="chart-wrap">
+        <motion.div {...fadeUp(0.28)} className="chart-wrap">
           <h4>Annual Principal vs Interest</h4>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData} barSize={12} barGap={2}>
@@ -170,12 +176,12 @@ export default function ResultPanel({ result }) {
               <Bar dataKey="Interest"  fill="#C8102E" radius={[3,3,0,0]} opacity={0.9} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Area chart ── */}
       {tab === 'overview' && (
-        <div className="chart-wrap">
+        <motion.div {...fadeUp(0.33)} className="chart-wrap">
           <h4>Remaining Balance</h4>
           <ResponsiveContainer width="100%" height={210}>
             <AreaChart data={chartData}>
@@ -192,12 +198,12 @@ export default function ResultPanel({ result }) {
               <Area type="monotone" dataKey="Balance" stroke="#1A3F6F" fill="url(#balGrad)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Pie chart ── */}
       {tab === 'breakdown' && (
-        <div className="chart-wrap pie-wrap">
+        <motion.div {...fadeUp(0.1)} className="chart-wrap pie-wrap">
           <h4>Total Cost Breakdown</h4>
           <ResponsiveContainer width="100%" height={290}>
             <PieChart>
@@ -214,12 +220,12 @@ export default function ResultPanel({ result }) {
                 wrapperStyle={{ fontSize: 12, color: '#7A6E64', fontFamily: 'IBM Plex Mono' }} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Schedule table ── */}
       {tab === 'schedule' && (
-        <div className="schedule-table-wrap">
+        <motion.div {...fadeUp(0.1)} className="schedule-table-wrap">
           <h4>Year-by-Year Schedule</h4>
           <div className="table-scroll">
             <table className="schedule-table">
@@ -243,7 +249,7 @@ export default function ResultPanel({ result }) {
               </tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

@@ -4,36 +4,41 @@
 
 :root {
   /* ── Backgrounds ── */
-  --bg:          #F5F0E8;
-  --bg-white:    #FFFFFF;
-  --bg-panel:    #FDFAF5;
+  --bg:          #F4EFE6;
+  --bg-white:    #FDFCFA;
+  --bg-panel:    #F9F6F1;
   --bg-muted:    #EDE8DF;
 
   /* ── Borders ── */
-  --border:      #D9D0C4;
-  --border-med:  #B8AFA4;
+  --border:      #E0D8CE;
+  --border-med:  #C4BAB0;
   --border-dark: #1C1208;
 
   /* ── Brand ── */
   --red:         #C8102E;
-  --red-dim:     #FFF0F2;
-  --red-mid:     rgba(200, 16, 46, 0.12);
+  --red-dim:     rgba(200, 16, 46, 0.07);
+  --red-mid:     rgba(200, 16, 46, 0.14);
   --green:       #1B5E3B;
-  --green-dim:   #F0F7F3;
+  --green-dim:   rgba(27, 94, 59, 0.08);
   --amber:       #B45309;
-  --amber-dim:   #FFF8F0;
+  --amber-dim:   rgba(180, 83, 9, 0.08);
   --navy:        #1A3F6F;
+  --navy-dim:    rgba(26, 63, 111, 0.07);
 
-  /* ── Semantic colours ── */
-  /* legacy aliases so ResultPanel inline styles work */
+  /* legacy aliases */
   --cyan:        #C8102E;
   --violet:      #1A3F6F;
-  --green-glow:  #1B5E3B;
 
   /* ── Typography ── */
   --text:        #1C1208;
   --text-muted:  #7A6E64;
-  --text-light:  #A89E94;
+  --text-light:  #B0A498;
+
+  /* ── Shadows ── */
+  --shadow-xs:   0 1px 3px rgba(28, 18, 8, 0.06), 0 1px 2px rgba(28, 18, 8, 0.04);
+  --shadow-sm:   0 2px 8px rgba(28, 18, 8, 0.07), 0 1px 3px rgba(28, 18, 8, 0.05);
+  --shadow-md:   0 4px 16px rgba(28, 18, 8, 0.08), 0 2px 6px rgba(28, 18, 8, 0.05);
+  --shadow-lg:   0 8px 32px rgba(28, 18, 8, 0.10), 0 3px 10px rgba(28, 18, 8, 0.06);
 
   /* ── Fonts ── */
   --mono:        'IBM Plex Mono', monospace;
@@ -41,10 +46,17 @@
   --sans:        'Inter', sans-serif;
 
   /* ── Radii ── */
-  --br-sm:  4px;
-  --br-md:  6px;
-  --br-lg:  8px;
-  --br-xl:  10px;
+  --br-sm:  6px;
+  --br-md:  10px;
+  --br-lg:  14px;
+  --br-xl:  18px;
+
+  /* ── Motion ── */
+  --ease:        cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:    0.15s;
+  --dur-base:    0.22s;
+  --dur-slow:    0.38s;
 }
 
 html { scroll-behavior: smooth; }
@@ -52,8 +64,11 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--sans);
   background-color: var(--bg);
-  background-image: radial-gradient(var(--border) 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 0% 0%, rgba(200,16,46,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(26,63,111,0.05) 0%, transparent 60%),
+    radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px;
   color: var(--text);
   min-height: 100vh;
   line-height: 1.6;
@@ -62,6 +77,9 @@ body {
 
 #root { position: relative; }
 
+::selection { background: var(--red-mid); color: var(--text); }
+
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-light); }

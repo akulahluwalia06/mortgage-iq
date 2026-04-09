@@ -1,42 +1,68 @@
 .mortgage-form {
   background: var(--bg-white);
   border: 1px solid var(--border);
-  border-top: 3px solid var(--red);
-  border-radius: var(--br-lg);
-  padding: 0;
+  border-radius: var(--br-xl);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: box-shadow var(--dur-base) var(--ease);
 }
 
+.mortgage-form:focus-within {
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Header ──────────────────────────────────────────────── */
 .form-header {
-  padding: 1.5rem 1.75rem 1.25rem;
+  padding: 1.6rem 1.85rem 1.35rem;
+  background: linear-gradient(to bottom, var(--bg-panel), var(--bg-white));
   border-bottom: 1px solid var(--border);
-  background: var(--bg-panel);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--red);
+}
+
+.form-header::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--red-dim) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .form-header h2 {
   font-family: var(--serif);
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 400;
   color: var(--text);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
 }
 
 .form-header p {
   font-size: 0.73rem;
   color: var(--text-muted);
   font-family: var(--mono);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.025em;
 }
 
-/* ── Section ─────────────────────────────────────────────── */
+/* ── Sections ────────────────────────────────────────────── */
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
-  padding: 1.25rem 1.75rem;
+  gap: 1.2rem;
+  padding: 1.35rem 1.85rem;
   border-bottom: 1px solid var(--border);
+  transition: background var(--dur-fast) var(--ease);
 }
 
 .form-section:last-of-type { border-bottom: none; }
@@ -46,10 +72,10 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--text-muted);
+  color: var(--text-light);
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.7rem;
   font-family: var(--mono);
 }
 
@@ -64,19 +90,22 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.38rem;
 }
 
 .field label {
-  font-size: 0.73rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: var(--text-muted);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.025em;
+  transition: color var(--dur-fast) var(--ease);
 }
 
-.optional { font-weight: 400; opacity: 0.7; }
+.field:focus-within label { color: var(--text); }
 
-/* ── Inputs — underline style ────────────────────────────── */
+.optional { font-weight: 400; opacity: 0.65; }
+
+/* ── Inputs ──────────────────────────────────────────────── */
 .field input,
 .field select {
   background: transparent;
@@ -87,127 +116,128 @@
   font-family: var(--mono);
   font-size: 0.95rem;
   font-weight: 500;
-  padding: 0.45rem 0;
+  padding: 0.48rem 0;
   outline: none;
-  transition: border-color 0.18s;
+  transition: border-color var(--dur-fast) var(--ease);
   width: 100%;
   -webkit-appearance: none;
 }
 
 .field select {
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A6E64' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23B0A498' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.25rem center;
-  padding-right: 1.5rem;
+  background-position: right 0.2rem center;
+  padding-right: 1.4rem;
 }
 
-.field input::placeholder { color: var(--text-light); font-size: 0.85rem; }
+.field input::placeholder { color: var(--text-light); font-weight: 400; }
 
 .field input:focus,
-.field select:focus { border-bottom-color: var(--red); }
+.field select:focus {
+  border-bottom-color: var(--red);
+}
 
 .field.error input,
 .field.error .input-wrap { border-bottom-color: var(--red) !important; }
 
-/* ── Input with prefix/suffix ────────────────────────────── */
+/* ── Input wrap ──────────────────────────────────────────── */
 .input-wrap {
   display: flex;
   align-items: center;
   border-bottom: 1.5px solid var(--border);
-  transition: border-color 0.18s;
+  transition: border-color var(--dur-fast) var(--ease);
 }
 
 .input-wrap:focus-within { border-bottom-color: var(--red); }
 
-.input-wrap input {
-  border: none;
-  background: transparent;
-  flex: 1;
-  padding-left: 0;
-}
+.input-wrap input { border: none; flex: 1; padding-left: 0; }
 
 .prefix {
   font-family: var(--mono);
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--text-muted);
   padding-right: 0.4rem;
   user-select: none;
   flex-shrink: 0;
+  transition: color var(--dur-fast) var(--ease);
 }
+
+.input-wrap:focus-within .prefix { color: var(--text); }
 
 .suffix {
   font-family: var(--mono);
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   color: var(--text-light);
-  padding-left: 0.4rem;
+  padding-left: 0.45rem;
   user-select: none;
   flex-shrink: 0;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 /* ── Messages ────────────────────────────────────────────── */
-.err-msg  { color: var(--red); font-size: 0.7rem; font-family: var(--mono); }
-.hint     { font-size: 0.7rem; color: var(--text-muted); font-family: var(--mono); }
+.err-msg { color: var(--red); font-size: 0.68rem; font-family: var(--mono); }
+.hint    { font-size: 0.68rem; color: var(--text-muted); font-family: var(--mono); }
 .hint.green  { color: var(--green); }
 .hint.yellow { color: var(--amber); }
 
-/* ── Down payment % badge ────────────────────────────────── */
+/* ── Down payment badge ──────────────────────────────────── */
 .pct-badge {
   background: var(--bg-muted);
   color: var(--text-muted);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  padding: 0.1rem 0.4rem;
-  border-radius: 2px;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
   margin-left: 0.4rem;
   font-family: var(--mono);
   letter-spacing: 0.03em;
+  border: 1px solid var(--border);
 }
 
 /* ── Credit score bar ────────────────────────────────────── */
 .credit-bar-wrap {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 4px;
+  gap: 0.8rem;
+  margin-top: 5px;
 }
 
 .credit-bar {
   flex: 1;
-  height: 2px;
+  height: 3px;
   background: var(--border);
-  border-radius: 1px;
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .credit-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--red), var(--amber), var(--green));
-  border-radius: 1px;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, var(--red) 0%, var(--amber) 50%, var(--green) 100%);
+  border-radius: 2px;
+  transition: width 0.6s var(--ease);
 }
 
 .credit-label {
-  font-size: 0.68rem;
+  font-size: 0.67rem;
   white-space: nowrap;
   color: var(--text-muted);
   font-family: var(--mono);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
-/* ── Two-column field row ────────────────────────────────── */
+/* ── Two-col row ─────────────────────────────────────────── */
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 /* ── Toggle buttons ──────────────────────────────────────── */
 .toggle-group,
 .employment-group {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.4rem;
   flex-wrap: wrap;
 }
 
@@ -215,24 +245,25 @@
 .emp-btn {
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 2px;
+  border-radius: var(--br-md);
   color: var(--text-muted);
   cursor: pointer;
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: 0.77rem;
   font-weight: 500;
-  padding: 0.38rem 0.8rem;
-  transition: all 0.15s;
+  padding: 0.42rem 0.95rem;
+  transition: all var(--dur-fast) var(--ease);
   letter-spacing: 0.02em;
 }
 
-.toggle-btn:hover { border-color: var(--border-med); color: var(--text); }
-.emp-btn:hover    { border-color: var(--border-med); color: var(--text); }
+.toggle-btn:hover { border-color: var(--border-med); color: var(--text); background: var(--bg-white); }
+.emp-btn:hover    { border-color: var(--border-med); color: var(--text); background: var(--bg-white); }
 
 .toggle-btn.active {
   background: var(--red);
   border-color: var(--red);
   color: #fff;
+  box-shadow: 0 2px 8px rgba(200, 16, 46, 0.28);
 }
 
 .emp-btn {
@@ -244,31 +275,52 @@
   background: var(--navy);
   border-color: var(--navy);
   color: #fff;
+  box-shadow: 0 2px 8px rgba(26, 63, 111, 0.28);
 }
 
-/* ── Submit button ───────────────────────────────────────── */
+/* ── Submit area ─────────────────────────────────────────── */
 .submit-wrap {
-  padding: 1.25rem 1.75rem;
-  background: var(--bg-panel);
+  padding: 1.35rem 1.85rem;
+  background: linear-gradient(to top, var(--bg-panel), var(--bg-white));
   border-top: 1px solid var(--border);
 }
 
 .submit-btn {
   background: var(--red);
   border: none;
-  border-radius: 3px;
+  border-radius: var(--br-md);
   color: #fff;
   cursor: pointer;
   font-family: var(--mono);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1rem;
   width: 100%;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: background 0.15s, opacity 0.15s;
+  transition: background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease-spring);
+  box-shadow: 0 2px 10px rgba(200, 16, 46, 0.3);
+  position: relative;
+  overflow: hidden;
 }
 
-.submit-btn:hover:not(:disabled) { background: #a50d25; }
-.submit-btn:active:not(:disabled) { background: #8a0b1f; }
-.submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #ae0d26;
+  box-shadow: 0 4px 16px rgba(200, 16, 46, 0.4);
+  transform: translateY(-1px);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(200, 16, 46, 0.25);
+}
+
+.submit-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
