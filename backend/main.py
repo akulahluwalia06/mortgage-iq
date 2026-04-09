@@ -8,20 +8,18 @@ from pydantic import BaseModel, Field, validator
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import numpy as np
 import joblib
 import os
 import logging
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-import sys, os
-sys.path.insert(0, os.path.dirname(__file__))
-
 from constants import (
-    PROVINCE_MAP, EMPLOYMENT_MAP, PROPERTY_TYPE_MAP,
-    GDS_LIMIT, TDS_LIMIT, STRESS_TEST_FLOOR,
+    PROVINCE_MAP, EMPLOYMENT_MAP, PROPERTY_TYPE_MAP, FEATURES,
+    GDS_LIMIT, TDS_LIMIT, STRESS_TEST_FLOOR, RATE_MIN, RATE_MAX,
+    monthly_payment, cmhc_insurance, min_down_payment, compute_gds_tds,
 )
 from scheduler import start_scheduler
 
@@ -65,10 +63,17 @@ DB_NAME     = os.getenv("DB_NAME", "mortgage_predictor")
 
 db_client: AsyncIOMotorClient | None = None
 predictions_col = None
-_scheduler = None
+_scheduler      = None
 
 # Shared mutable state — scheduler hot-swaps models here without restart
 app_state: dict = {}
+
+RESULT_FIELDS = (
+    "approval_probability", "approved", "predicted_interest_rate",
+    "monthly_payment", "total_payment", "total_interest",
+    "cmhc_insurance", "loan_amount", "gds_ratio", "tds_ratio",
+    "passes_stress_test",
+)
 
 
 @app.on_event("startup")
@@ -79,8 +84,7 @@ async def startup_db():
             db_client = AsyncIOMotorClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
             db = db_client[DB_NAME]
             predictions_col = db["predictions"]
-            # Ping first — fail fast if unreachable rather than hanging
-            await db_client.admin.command("ping")
+            await db_client.admin.command("ping")   # fail-fast if unreachable
             await predictions_col.create_index("timestamp")
             log.info(f"✅ MongoDB connected → {DB_NAME}.predictions")
 
@@ -110,13 +114,8 @@ async def save_prediction(input_data: dict, result_data: dict):
     try:
         doc = {
             "timestamp": datetime.now(timezone.utc),
-            "input": input_data,
-            "result": {k: result_data[k] for k in (
-                "approval_probability", "approved", "predicted_interest_rate",
-                "monthly_payment", "total_payment", "total_interest",
-                "cmhc_insurance", "loan_amount", "gds_ratio", "tds_ratio",
-                "passes_stress_test",
-            )},
+            "input":     input_data,
+            "result":    {k: result_data[k] for k in RESULT_FIELDS},
         }
         await predictions_col.insert_one(doc)
     except Exception as e:
@@ -163,8 +162,15 @@ class MortgageRequest(BaseModel):
     @validator("down_payment")
     def down_payment_valid(cls, v, values):
         pv = values.get("property_value")
-        if pv and v >= pv:
+        if pv is None:
+            return v
+        if v >= pv:
             raise ValueError("Down payment must be less than the property value")
+        required = min_down_payment(pv)
+        if v < required:
+            raise ValueError(
+                f"Minimum down payment for a ${pv:,.0f} property is ${required:,.0f} (CMHC rules)"
+            )
         return v
 
 
@@ -176,57 +182,39 @@ class AmortizationRow(BaseModel):
 
 
 class MortgageResponse(BaseModel):
-    approval_probability:   float
-    approved:               bool
+    approval_probability:    float
+    approved:                bool
     predicted_interest_rate: float
-    monthly_payment:        float
-    total_payment:          float
-    total_interest:         float
-    cmhc_insurance:         float
-    loan_amount:            float
-    gds_ratio:              float
-    tds_ratio:              float
-    stress_test_rate:       float
-    passes_stress_test:     bool
-    amortization_schedule:  list[AmortizationRow]
-    insights:               list[str]
+    monthly_payment:         float
+    total_payment:           float
+    total_interest:          float
+    cmhc_insurance:          float
+    loan_amount:             float
+    gds_ratio:               float
+    tds_ratio:               float
+    stress_test_rate:        float
+    passes_stress_test:      bool
+    amortization_schedule:   list[AmortizationRow]
+    insights:                list[str]
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-def calculate_cmhc(property_value: float, down_payment: float) -> float:
-    """CMHC mortgage insurance per current CMHC rules."""
-    dp_pct = down_payment / property_value
-    if dp_pct >= 0.20 or property_value > 1_500_000:
-        return 0.0
-    rate = 0.0400 if dp_pct < 0.10 else 0.0310 if dp_pct < 0.15 else 0.0280
-    return round((property_value - down_payment) * rate, 2)
-
-
-def monthly_payment_calc(principal: float, annual_rate_pct: float, years: int) -> float:
-    """Standard fixed-rate monthly mortgage payment formula."""
-    r = (annual_rate_pct / 100) / 12
-    n = years * 12
-    if r == 0:
-        return principal / n
-    return principal * (r * (1 + r) ** n) / ((1 + r) ** n - 1)
-
-
+# ── Amortization schedule ─────────────────────────────────────────────────────
 def build_amortization_schedule(
     principal: float, annual_rate_pct: float, years: int
 ) -> list[AmortizationRow]:
-    """Year-by-year amortization summary. Payment is computed once for efficiency."""
-    r = (annual_rate_pct / 100) / 12
-    payment = monthly_payment_calc(principal, annual_rate_pct, years)
+    """Year-by-year amortization summary."""
+    r       = (annual_rate_pct / 100) / 12
+    payment = monthly_payment(principal, annual_rate_pct, years)
     balance = principal
     schedule = []
     for year in range(1, years + 1):
         year_interest = year_principal = 0.0
         for _ in range(12):
-            interest = balance * r
-            prin = payment - interest
+            interest       = balance * r
+            prin           = payment - interest
             year_interest  += interest
             year_principal += prin
-            balance = max(balance - prin, 0.0)
+            balance         = max(balance - prin, 0.0)
         schedule.append(AmortizationRow(
             year=year,
             principal_paid=round(year_principal, 2),
@@ -243,17 +231,15 @@ async def predict_mortgage(request: Request, req: MortgageRequest):
     if approval_model is None:
         raise HTTPException(503, "Models not loaded. Run model/train_model.py first.")
 
-    monthly_income   = req.annual_income / 12
     down_payment_pct = req.down_payment / req.property_value
     loan_amount      = req.property_value - req.down_payment
-    cmhc             = calculate_cmhc(req.property_value, req.down_payment)
+    cmhc             = cmhc_insurance(req.property_value, req.down_payment)
     total_loan       = loan_amount + cmhc
 
-    # GDS / TDS computed at stress test floor for qualification purposes
-    est_payment      = monthly_payment_calc(total_loan, STRESS_TEST_FLOOR, req.amortization)
-    property_tax_heat = req.property_value * 0.015 / 12  # approx 1.5% annual property tax + heat
-    gds = (est_payment + property_tax_heat) / monthly_income
-    tds = gds + req.existing_monthly_debt / monthly_income
+    gds, tds = compute_gds_tds(
+        total_loan, req.property_value,
+        req.annual_income, req.existing_monthly_debt, req.amortization,
+    )
 
     feature_vector = np.array([[
         req.annual_income,
@@ -261,8 +247,7 @@ async def predict_mortgage(request: Request, req: MortgageRequest):
         down_payment_pct,
         req.property_value,
         req.existing_monthly_debt,
-        gds,
-        tds,
+        gds, tds,
         EMPLOYMENT_MAP[req.employment_type],
         PROVINCE_MAP[req.province],
         req.amortization,
@@ -275,30 +260,31 @@ async def predict_mortgage(request: Request, req: MortgageRequest):
     _scaler         = app_state.get("scaler", scaler)
 
     try:
-        X_scaled      = _scaler.transform(feature_vector)
-        approval_prob = float(_approval_model.predict_proba(X_scaled)[0][1])
+        X_scaled       = _scaler.transform(feature_vector)
+        approval_prob  = float(_approval_model.predict_proba(X_scaled)[0][1])
         predicted_rate = float(_rate_model.predict(X_scaled)[0])
     except Exception as e:
         log.error(f"Model prediction failed: {e}")
         raise HTTPException(500, "Prediction failed. Please try again.")
 
-    predicted_rate = round(max(2.5, min(9.5, predicted_rate)), 2)
+    predicted_rate = round(max(RATE_MIN, min(RATE_MAX, predicted_rate)), 2)
 
-    monthly       = monthly_payment_calc(total_loan, predicted_rate, req.amortization)
-    total_payment = monthly * req.amortization * 12
+    pmt           = monthly_payment(total_loan, predicted_rate, req.amortization)
+    total_payment = pmt * req.amortization * 12
     total_interest = total_payment - total_loan
 
-    # OSFI B-20 stress test: qualifying rate is max(contracted_rate + 2%, floor)
-    # Capped at 9.5% — beyond that no product exists in Canada
-    stress_test_rate = round(min(max(predicted_rate + 2.0, STRESS_TEST_FLOOR), 9.5), 2)
-    stress_payment   = monthly_payment_calc(total_loan, stress_test_rate, req.amortization)
-    stress_gds       = (stress_payment + property_tax_heat) / monthly_income
-    stress_tds       = stress_gds + req.existing_monthly_debt / monthly_income
-    passes_stress_test = stress_gds <= GDS_LIMIT and stress_tds <= TDS_LIMIT
+    # OSFI B-20 stress test
+    stress_rate = round(min(max(predicted_rate + 2.0, STRESS_TEST_FLOOR), RATE_MAX), 2)
+    s_gds, s_tds = compute_gds_tds(
+        total_loan, req.property_value,
+        req.annual_income, req.existing_monthly_debt, req.amortization,
+        qualifying_rate=stress_rate,
+    )
+    passes_stress_test = s_gds <= GDS_LIMIT and s_tds <= TDS_LIMIT
 
     schedule = build_amortization_schedule(total_loan, predicted_rate, req.amortization)
 
-    insights = []
+    insights: list[str] = []
     if approval_prob < 0.5:
         insights.append("⚠️ Low approval probability. Consider a larger down payment or improving your credit score.")
     if gds > GDS_LIMIT:
@@ -320,14 +306,14 @@ async def predict_mortgage(request: Request, req: MortgageRequest):
         approval_probability=round(approval_prob, 4),
         approved=approval_prob >= 0.50,
         predicted_interest_rate=predicted_rate,
-        monthly_payment=round(monthly, 2),
+        monthly_payment=round(pmt, 2),
         total_payment=round(total_payment, 2),
         total_interest=round(total_interest, 2),
         cmhc_insurance=round(cmhc, 2),
         loan_amount=round(total_loan, 2),
         gds_ratio=round(gds, 4),
         tds_ratio=round(tds, 4),
-        stress_test_rate=stress_test_rate,
+        stress_test_rate=stress_rate,
         passes_stress_test=passes_stress_test,
         amortization_schedule=schedule,
         insights=insights,
@@ -344,7 +330,7 @@ async def get_history(request: Request, limit: int = Query(20, ge=1, le=100)):
     if predictions_col is None:
         raise HTTPException(503, "MongoDB not configured. Add MONGODB_URI to .env")
     cursor = predictions_col.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit)
-    docs = await cursor.to_list(length=limit)
+    docs   = await cursor.to_list(length=limit)
     return {"count": len(docs), "predictions": docs}
 
 
@@ -384,7 +370,7 @@ async def health():
         except Exception:
             pass
     return {
-        "status": "ok",
-        "models_loaded": approval_model is not None,
+        "status":           "ok",
+        "models_loaded":    approval_model is not None,
         "mongodb_connected": mongo_ok,
     }

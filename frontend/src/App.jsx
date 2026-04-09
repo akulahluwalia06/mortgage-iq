@@ -1,40 +1,24 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+import { predictMortgage } from './api/mortgageApi';
 import MortgageForm from './components/MortgageForm';
 import ResultPanel from './components/ResultPanel';
 import Header from './components/Header';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
 export default function App() {
-  const [result, setResult] = useState(null);
+  const [result,  setResult]  = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error,   setError]   = useState(null);
 
   const handleSubmit = async (formData) => {
     setLoading(true);
     setError(null);
     setResult(null);
-    try {
-      const { data } = await axios.post(`${API_URL}/predict`, formData, { timeout: 30000 });
-      setResult(data);
-    } catch (err) {
-      if (err.code === 'ECONNABORTED') {
-        setError('Request timed out. The server is taking too long — please try again.');
-      } else if (!err.response) {
-        setError('Cannot reach the server. Make sure the backend is running on port 8000.');
-      } else if (err.response.status === 429) {
-        setError('Too many requests. Please wait a moment before trying again.');
-      } else if (err.response.status === 422) {
-        setError('Invalid input. Please check your values and try again.');
-      } else {
-        setError(err.response?.data?.detail || 'Something went wrong. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
+    const { data, error: err } = await predictMortgage(formData);
+    if (err) setError(err);
+    else     setResult(data);
+    setLoading(false);
   };
 
   return (
