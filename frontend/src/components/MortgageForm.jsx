@@ -53,12 +53,14 @@ export default function MortgageForm({ onSubmit, loading }) {
     if (!form.property_value || pv < 1) errs.property_value = 'Required';
     if (!form.down_payment || dp < 1) errs.down_payment = 'Required';
     if (dp >= pv) errs.down_payment = 'Must be less than property value';
-    if (pv >= 500000 && pv < 1000000 && dp / pv < 0.10)
-      errs.down_payment = 'Min 10% required for $500k–$999k';
-    if (pv >= 1000000 && dp / pv < 0.20)
-      errs.down_payment = 'Min 20% required for $1M+';
-    if (pv < 500000 && dp / pv < 0.05)
-      errs.down_payment = 'Min 5% down payment required';
+    // Canadian CMHC pro-rated minimum: 5% on first $500k + 10% on remainder up to $999k, 20% on $1M+
+    const minDp = pv >= 1000000
+      ? pv * 0.20
+      : pv <= 500000
+        ? pv * 0.05
+        : 500000 * 0.05 + (pv - 500000) * 0.10;
+    if (!errs.down_payment && dp < minDp)
+      errs.down_payment = `Min down payment is $${Math.ceil(minDp).toLocaleString('en-CA')} (CMHC rules)`;
     return errs;
   };
 
