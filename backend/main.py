@@ -19,6 +19,7 @@ import logging
 from constants import (
     PROVINCE_MAP, EMPLOYMENT_MAP, PROPERTY_TYPE_MAP, FEATURES,
     GDS_LIMIT, TDS_LIMIT, STRESS_TEST_FLOOR, RATE_MIN, RATE_MAX,
+    PROPERTY_TAX_HEAT_RATE,
     monthly_payment, cmhc_insurance, min_down_payment, compute_gds_tds,
 )
 from scheduler import start_scheduler
@@ -321,6 +322,114 @@ async def predict_mortgage(request: Request, req: MortgageRequest):
 
     await save_prediction(req.dict(), response.dict())
     return response
+
+
+# ── Renewal endpoint ──────────────────────────────────────────────────────────
+class RenewalRequest(BaseModel):
+    remaining_balance:  float = Field(..., gt=0,  description="Outstanding mortgage balance in CAD")
+    current_rate:       float = Field(..., gt=0,  le=25, description="Current interest rate (%)")
+    new_rate:           float = Field(..., gt=0,  le=25, description="Offered renewal rate (%)")
+    remaining_years:    int   = Field(..., ge=1,  le=30, description="Years remaining on amortization")
+    lump_sum:           float = Field(0,  ge=0,  description="Optional lump-sum payment at renewal (CAD)")
+    new_amortization:   int   = Field(0,  ge=0,  le=30, description="New amortization period (0 = keep remaining_years)")
+    annual_income:      float = Field(0,  ge=0,  description="Annual income for stress test (optional)")
+    monthly_debt:       float = Field(0,  ge=0,  description="Monthly debt payments for stress test (optional)")
+
+    @validator("lump_sum")
+    def lump_sum_valid(cls, v, values):
+        bal = values.get("remaining_balance", 0)
+        if v >= bal:
+            raise ValueError("Lump sum must be less than remaining balance")
+        return v
+
+
+class RenewalResponse(BaseModel):
+    current_monthly:        float
+    new_monthly:            float
+    monthly_savings:        float
+    current_total_interest: float
+    new_total_interest:     float
+    interest_savings:       float
+    new_balance:            float
+    effective_amortization: int
+    stress_test_rate:       float
+    passes_stress_test:     bool | None
+    amortization_schedule:  list[AmortizationRow]
+    insights:               list[str]
+
+
+@app.post("/renew", response_model=RenewalResponse)
+@limiter.limit("10/minute")
+async def renew_mortgage(request: Request, req: RenewalRequest):
+    amort = req.new_amortization if req.new_amortization > 0 else req.remaining_years
+    new_balance = req.remaining_balance - req.lump_sum
+
+    current_monthly = monthly_payment(req.remaining_balance, req.current_rate, req.remaining_years)
+    new_monthly     = monthly_payment(new_balance,           req.new_rate,     amort)
+
+    current_total_interest = current_monthly * req.remaining_years * 12 - req.remaining_balance
+    new_total_interest     = new_monthly     * amort                * 12 - new_balance
+
+    monthly_savings  = current_monthly - new_monthly
+    interest_savings = current_total_interest - new_total_interest
+
+    stress_rate = round(min(max(req.new_rate + 2.0, STRESS_TEST_FLOOR), RATE_MAX), 2)
+    passes = None
+    if req.annual_income > 0:
+        stress_pmt     = monthly_payment(new_balance, stress_rate, amort)
+        prop_tax_heat  = new_balance * PROPERTY_TAX_HEAT_RATE   # rough proxy without property value
+        monthly_income = req.annual_income / 12
+        s_gds = (stress_pmt + prop_tax_heat) / monthly_income
+        s_tds = s_gds + req.monthly_debt / monthly_income
+        passes = s_gds <= GDS_LIMIT and s_tds <= TDS_LIMIT
+
+    schedule = build_amortization_schedule(new_balance, req.new_rate, amort)
+
+    insights: list[str] = []
+    rate_diff = req.new_rate - req.current_rate
+    if rate_diff > 0:
+        insights.append(f"📈 Your rate is increasing by {rate_diff:.2f}%. Your monthly payment rises by ${abs(monthly_savings):,.0f}.")
+    elif rate_diff < 0:
+        insights.append(f"📉 Your rate is decreasing by {abs(rate_diff):.2f}%. You save ${monthly_savings:,.0f}/month.")
+    else:
+        insights.append("↔️ Rate is unchanged at renewal.")
+
+    if interest_savings > 0:
+        insights.append(f"💰 You'll save ${interest_savings:,.0f} in total interest compared to staying at your current rate.")
+    elif interest_savings < 0:
+        insights.append(f"⚠️ You'll pay ${abs(interest_savings):,.0f} more in total interest due to the higher rate.")
+
+    if req.lump_sum > 0:
+        lump_interest_saved = req.lump_sum * (req.new_rate / 100) * amort
+        insights.append(f"✅ Your ${req.lump_sum:,.0f} lump-sum payment saves approximately ${lump_interest_saved:,.0f} in interest over the term.")
+
+    if req.new_amortization > req.remaining_years:
+        insights.append(f"⚠️ Extending amortization to {req.new_amortization} years lowers monthly payments but increases total interest paid.")
+    elif req.new_amortization > 0 and req.new_amortization < req.remaining_years:
+        insights.append(f"✅ Shortening amortization to {req.new_amortization} years increases payments but reduces total interest.")
+
+    if passes is False:
+        insights.append("⚠️ At the renewal stress test rate, this mortgage may not qualify. Speak with your lender.")
+    elif passes is True:
+        insights.append("✅ Passes the OSFI B-20 stress test at the qualifying rate.")
+
+    if req.new_rate > 5.0:
+        insights.append("💡 Consider a shorter term (1–2 yr) to position for potential rate decreases.")
+
+    return RenewalResponse(
+        current_monthly=round(current_monthly, 2),
+        new_monthly=round(new_monthly, 2),
+        monthly_savings=round(monthly_savings, 2),
+        current_total_interest=round(current_total_interest, 2),
+        new_total_interest=round(new_total_interest, 2),
+        interest_savings=round(interest_savings, 2),
+        new_balance=round(new_balance, 2),
+        effective_amortization=amort,
+        stress_test_rate=stress_rate,
+        passes_stress_test=passes,
+        amortization_schedule=schedule,
+        insights=insights,
+    )
 
 
 # ── History endpoint ──────────────────────────────────────────────────────────

@@ -29,6 +29,15 @@ export async function predictMortgage(formData) {
   }
 }
 
+export async function calculateRenewal(formData) {
+  try {
+    const { data } = await client.post('/renew', formData);
+    return { data, error: null };
+  } catch (err) {
+    return { data: null, error: normaliseError(err) };
+  }
+}
+
 export async function getHistory(limit = 20) {
   try {
     const { data } = await client.get('/history', { params: { limit } });

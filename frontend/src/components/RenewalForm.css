@@ -1,0 +1,34 @@
+/* RenewalForm shares MortgageForm.css base styles.
+   Only overrides specific to the renewal panel go here. */
+
+.renewal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.renewal-badge.up {
+  color: var(--red);
+  border-color: rgba(200, 16, 46, 0.25);
+  background: var(--red-dim);
+}
+
+.renewal-badge.down {
+  color: var(--green);
+  border-color: rgba(27, 94, 59, 0.25);
+  background: var(--green-dim);
+}
+
+.renewal-badge.flat {
+  color: var(--text-muted);
+  border-color: var(--border);
+  background: var(--bg-muted);
+}
