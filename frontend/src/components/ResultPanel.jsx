@@ -13,7 +13,7 @@ const PCT = (n) => `${(n * 100).toFixed(1)}%`;
 
 function ApprovalGauge({ prob }) {
   const pct = Math.round(prob * 100);
-  const color = pct >= 75 ? '#00ffa3' : pct >= 50 ? '#fbbf24' : '#ff4d6d';
+  const color = pct >= 75 ? '#1B5E3B' : pct >= 50 ? '#B45309' : '#C8102E';
   const arcLen = 173;
   const filled = (pct / 100) * arcLen;
 
@@ -77,11 +77,7 @@ export default function ResultPanel({ result }) {
     { name: 'Interest',  value: Math.round(total_interest) },
     ...(cmhc_insurance > 0 ? [{ name: 'CMHC', value: Math.round(cmhc_insurance) }] : []),
   ];
-  const PIE_COLORS = [
-    getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()   || '#00d4ff',
-    getComputedStyle(document.documentElement).getPropertyValue('--violet').trim() || '#7c3aed',
-    getComputedStyle(document.documentElement).getPropertyValue('--amber').trim()  || '#fbbf24',
-  ];
+  const PIE_COLORS = ['#C8102E', '#1A3F6F', '#B45309'];
 
   return (
     <div className="result-panel">
@@ -165,13 +161,13 @@ export default function ResultPanel({ result }) {
           <h4>Annual Principal vs Interest</h4>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData} barSize={12} barGap={2}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,212,255,0.07)" vertical={false} />
-              <XAxis dataKey="year" tick={{ fill: 'rgba(140,180,220,0.5)', fontSize: 10 }} tickFormatter={(v) => `Y${v}`} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(140,180,220,0.5)', fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,212,255,0.04)' }} />
-              <Legend wrapperStyle={{ fontSize: 11, color: 'rgba(140,180,220,0.6)' }} />
-              <Bar dataKey="Principal" fill="#00d4ff" radius={[3,3,0,0]} opacity={0.85} />
-              <Bar dataKey="Interest"  fill="#7c3aed" radius={[3,3,0,0]} opacity={0.85} />
+              <CartesianGrid strokeDasharray="2 4" stroke="rgba(0,0,0,0.06)" vertical={false} />
+              <XAxis dataKey="year" tick={{ fill: '#A89E94', fontSize: 10, fontFamily: 'IBM Plex Mono' }} tickFormatter={(v) => `Y${v}`} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#A89E94', fontSize: 10, fontFamily: 'IBM Plex Mono' }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
+              <Legend wrapperStyle={{ fontSize: 11, color: '#7A6E64', fontFamily: 'IBM Plex Mono' }} />
+              <Bar dataKey="Principal" fill="#1A3F6F" radius={[3,3,0,0]} opacity={0.9} />
+              <Bar dataKey="Interest"  fill="#C8102E" radius={[3,3,0,0]} opacity={0.9} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -185,15 +181,15 @@ export default function ResultPanel({ result }) {
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#00d4ff" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#00d4ff" stopOpacity={0} />
+                  <stop offset="5%"  stopColor="#1A3F6F" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#1A3F6F" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,212,255,0.07)" vertical={false} />
-              <XAxis dataKey="year" tick={{ fill: 'rgba(140,180,220,0.5)', fontSize: 10 }} tickFormatter={(v) => `Y${v}`} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: 'rgba(140,180,220,0.5)', fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(0,212,255,0.2)' }} />
-              <Area type="monotone" dataKey="Balance" stroke="#00d4ff" fill="url(#balGrad)" strokeWidth={2} dot={false} />
+              <CartesianGrid strokeDasharray="2 4" stroke="rgba(0,0,0,0.06)" vertical={false} />
+              <XAxis dataKey="year" tick={{ fill: '#A89E94', fontSize: 10, fontFamily: 'IBM Plex Mono' }} tickFormatter={(v) => `Y${v}`} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#A89E94', fontSize: 10, fontFamily: 'IBM Plex Mono' }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(0,0,0,0.1)' }} />
+              <Area type="monotone" dataKey="Balance" stroke="#1A3F6F" fill="url(#balGrad)" strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -213,9 +209,9 @@ export default function ResultPanel({ result }) {
                 ))}
               </Pie>
               <Tooltip formatter={(v) => CAD(v)}
-                contentStyle={{ background: 'rgba(8,16,38,0.95)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: 10, fontSize: 12 }} />
+                contentStyle={{ background: '#fff', border: '1px solid #D9D0C4', borderRadius: 4, fontSize: 12, fontFamily: 'IBM Plex Mono' }} />
               <Legend formatter={(v, e) => `${v}: ${CAD(e.payload.value)}`}
-                wrapperStyle={{ fontSize: 12, color: 'rgba(140,180,220,0.7)' }} />
+                wrapperStyle={{ fontSize: 12, color: '#7A6E64', fontFamily: 'IBM Plex Mono' }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -268,13 +264,12 @@ function RatioCard({ label, value, max, actual }) {
   return (
     <div className={`ratio-card ${ok ? 'ok' : 'over'}`}>
       <div className="ratio-top">
-        <span style={{ color: 'rgba(140,180,220,0.6)', fontSize: '0.75rem' }}>{label}</span>
-        <span className="ratio-value" style={{ color: ok ? '#00ffa3' : '#ff4d6d' }}>{value}</span>
+        <span>{label}</span>
+        <span className="ratio-value" style={{ color: ok ? '#1B5E3B' : '#C8102E' }}>{value}</span>
       </div>
       <div className="ratio-bar">
         <div className="ratio-fill"
-          style={{ width: `${pct}%`, background: ok ? '#00ffa3' : '#ff4d6d',
-            boxShadow: ok ? '0 0 6px #00ffa360' : '0 0 6px #ff4d6d60' }} />
+          style={{ width: `${pct}%`, background: ok ? '#1B5E3B' : '#C8102E' }} />
       </div>
       <p className="ratio-limit">Max {(max * 100).toFixed(0)}% · {ok ? '✓ Within limit' : '✕ Exceeds limit'}</p>
     </div>

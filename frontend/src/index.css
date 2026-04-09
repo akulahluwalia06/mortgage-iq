@@ -1,81 +1,67 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   /* ── Backgrounds ── */
-  --bg-deep:      #02040f;
-  --bg-card:      rgba(8, 16, 38, 0.75);
-  --bg-input:     rgba(6, 14, 34, 0.9);
+  --bg:          #F5F0E8;
+  --bg-white:    #FFFFFF;
+  --bg-panel:    #FDFAF5;
+  --bg-muted:    #EDE8DF;
 
   /* ── Borders ── */
-  --border:       rgba(0, 212, 255, 0.12);
-  --border-hover: rgba(0, 212, 255, 0.35);
+  --border:      #D9D0C4;
+  --border-med:  #B8AFA4;
+  --border-dark: #1C1208;
 
-  /* ── Brand colours ── */
-  --cyan:         #00d4ff;
-  --cyan-dim:     rgba(0, 212, 255, 0.15);
-  --violet:       #7c3aed;
-  --violet-light: #a78bfa;
-  --violet-dim:   rgba(124, 58, 237, 0.15);
+  /* ── Brand ── */
+  --red:         #C8102E;
+  --red-dim:     #FFF0F2;
+  --red-mid:     rgba(200, 16, 46, 0.12);
+  --green:       #1B5E3B;
+  --green-dim:   #F0F7F3;
+  --amber:       #B45309;
+  --amber-dim:   #FFF8F0;
+  --navy:        #1A3F6F;
 
   /* ── Semantic colours ── */
-  --green:        #00ffa3;
-  --green-dim:    rgba(0, 255, 163, 0.12);
-  --red:          #ff4d6d;
-  --red-dim:      rgba(255, 77, 109, 0.12);
-  --amber:        #fbbf24;
+  /* legacy aliases so ResultPanel inline styles work */
+  --cyan:        #C8102E;
+  --violet:      #1A3F6F;
+  --green-glow:  #1B5E3B;
 
   /* ── Typography ── */
-  --text:         #e8f4ff;
-  --text-muted:   rgba(180, 210, 240, 0.45);
-  --text-sub:     rgba(140, 180, 220, 0.65);
+  --text:        #1C1208;
+  --text-muted:  #7A6E64;
+  --text-light:  #A89E94;
 
-  /* ── Border radius scale ── */
-  --br-sm:  8px;
-  --br-md:  12px;
-  --br-lg:  16px;
-  --br-xl:  20px;
+  /* ── Fonts ── */
+  --mono:        'IBM Plex Mono', monospace;
+  --serif:       'DM Serif Display', serif;
+  --sans:        'Inter', sans-serif;
+
+  /* ── Radii ── */
+  --br-sm:  4px;
+  --br-md:  6px;
+  --br-lg:  8px;
+  --br-xl:  10px;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg-deep);
+  font-family: var(--sans);
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--border) 1px, transparent 1px);
+  background-size: 22px 22px;
   color: var(--text);
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
 }
 
-/* ── Animated background ─────────────────────────────────── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 10% 0%, rgba(124,58,237,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(0,212,255,0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(236,72,153,0.05) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
+#root { position: relative; }
 
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-#root { position: relative; z-index: 1; }
-
-::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border-med); border-radius: 3px; }

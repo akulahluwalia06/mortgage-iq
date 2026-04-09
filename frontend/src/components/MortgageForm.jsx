@@ -252,15 +252,16 @@ export default function MortgageForm({ onSubmit, loading }) {
         </div>
       </section>
 
-      <motion.button
-        type="submit"
-        className="submit-btn"
-        disabled={loading}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        {loading ? 'Analysing…' : 'Analyse My Mortgage →'}
-      </motion.button>
+      <div className="submit-wrap">
+        <motion.button
+          type="submit"
+          className="submit-btn"
+          disabled={loading}
+          whileTap={{ scale: 0.98 }}
+        >
+          {loading ? 'Analysing…' : 'Analyse My Mortgage →'}
+        </motion.button>
+      </div>
     </form>
   );
 }
