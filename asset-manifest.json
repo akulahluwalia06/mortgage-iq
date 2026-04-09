@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/mortgage-iq/static/css/main.f6661869.css",
-    "main.js": "/mortgage-iq/static/js/main.60c035fb.js",
+    "main.css": "/mortgage-iq/static/css/main.ee65cc86.css",
+    "main.js": "/mortgage-iq/static/js/main.3ccb5f32.js",
     "index.html": "/mortgage-iq/index.html",
-    "main.f6661869.css.map": "/mortgage-iq/static/css/main.f6661869.css.map",
-    "main.60c035fb.js.map": "/mortgage-iq/static/js/main.60c035fb.js.map"
+    "main.ee65cc86.css.map": "/mortgage-iq/static/css/main.ee65cc86.css.map",
+    "main.3ccb5f32.js.map": "/mortgage-iq/static/js/main.3ccb5f32.js.map"
   },
   "entrypoints": [
-    "static/css/main.f6661869.css",
-    "static/js/main.60c035fb.js"
+    "static/css/main.ee65cc86.css",
+    "static/js/main.3ccb5f32.js"
   ]
 }
